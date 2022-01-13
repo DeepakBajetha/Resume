@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <!-- 引入样式 -->
+    
     <link rel="stylesheet" href="style/style.css">
 
     <style type="text/css" media="print">
@@ -191,7 +191,7 @@ var app = new Vue({
             setLeftMenuHeight: function() {
                 // this.asideHeight = document.body.scrollHeight - 60;
                 this.mainHeight = document.documentElement.clientHeight - 60 - 20;
-                // 60为头部导航高度， 46为menu高度， 40为上下padding
+                
                 this.asideHeight = this.mainHeight - 20 - 46;
             },
             changePage: function(page) {
