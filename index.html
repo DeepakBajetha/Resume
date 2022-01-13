@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="style/style.css">
+
+    <style type="text/css" media="print">
+        .noprint {
+            display: none
+        }
+        
+        .print {
+            display: block !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <header class="el-header noprint">
+            <div class="icon-btns">
+                <i class="icon-list" @click="changeLeftMenu"></i>
+                <i class="icon-skip_previous" v-bind:class="{'disabled': currentPage == 1}" @click="changeCurrentPage('first')"></i>
+                <i class="icon-play_arrow prev-icon" v-bind:class="{'disabled': currentPage == 1}" @click="changeCurrentPage('prev')"></i>
+                <i class="icon-play_arrow" v-bind:class="{'disabled': currentPage == pageNum}" @click="changeCurrentPage('next')"></i>
+                <i class="icon-skip_next" v-bind:class="{'disabled': currentPage == pageNum}" @click="changeCurrentPage('last')"></i>
+                <select v-model="currentPage">
+                    <option v-for="page in pageNum" v-bind:value="page">page {{ page }}</option>
+                </select>
+                <i class="icon-zoom_in" v-bind:class="{'disabled': zoomNum == 2}" @click="modifyZoom('in')"></i>
+                <select v-model="zoomNum">
+                    <option value="0.5">50%</option>
+                    <option value="0.6">60%</option>
+                    <option value="0.7">70%</option>
+                    <option value="0.8">80%</option>
+                    <option value="0.9">90%</option>
+                    <option value="1.0" selected>100%</option>
+                    <option value="1.1">110%</option>
+                    <option value="1.2">120%</option>
+                    <option value="1.3">130%</option>
+                    <option value="1.4">140%</option>
+                    <option value="1.5">150%</option>
+                    <option value="1.6">160%</option>
+                    <option value="1.7">170%</option>
+                    <option value="1.8">180%</option>
+                    <option value="1.9">190%</option>
+                    <option value="2.0">200%</option>
+                </select>
+                <i class="icon-zoom_out" v-bind:class="{'disabled': zoomNum == 0.5}" @click="modifyZoom('out')"></i>
+                <i class="icon-format_align_left" @click="textAlign = 'left'"></i>
+                <i class="icon-format_align_center" @click="textAlign = 'center'"></i>
+                <i class="icon-format_align_right" @click="textAlign = 'right'"></i>
+                <i class="icon-print" @click="window.print()"></i>
+            </div>
+        </header>
+
+        <aside class="noprint" width="240px" v-show="ifMenuShow">
+            <nav class="tabNav">
+                <ul>
+                    <li v-bind:class="{ 'curr': currentNav == 0 }" @click="currentNav = 0">Page</li>
+                    <li v-bind:class="{ 'curr': currentNav == 1 }" @click="currentNav = 1">Bookmark</li>
+                </ul>
+
+                <div class="clear"></div>
+            </nav>
+
+            <div class="tab-conent scrollbar" v-bind:style="{ height: asideHeight + 'px' }">
+
+            <section v-show="currentNav == 0">
+                <ul class="page-menu">
+                    <li v-for="page in pageNum" v-bind:class="{ 'curr': currentPage == page }" @click="changePage(page)"><i class="icon-file-text2"></i> page {{ page }}</li>
+                </ul>
+            </section>
+
+            <section v-show="currentNav == 1">
+                <ul class="page-menu">
+                    <li v-for="page in pageNum" v-bind:class="{ 'curr': currentPage == page }" @click="changePage(page)"><i class="icon-turned_in_not"></i> Bookmark {{ page }}</li>
+                </ul>
+            </section>
+        </div>
+
+        </aside>
+        <div class="main scrollbar noprint"  v-bind:style="{ height: mainHeight + 'px' }" v-bind:class="{ 'mainLeftM': ifMenuShow, 'aleft': textAlign === 'left','acenter': textAlign === 'center','aright': textAlign === 'right'}">
+            <div class="conent" v-html="pageContent" v-bind:style="zoomStyle"></div>
+
+            <div class="clear"></div>
+        </div>
+
+        <!--专门只为打印的内容-->
+        <div class="conent print" style="display:none" v-html="pageContent"></div>
+    </div>
+</body>
+<!-- 先引入 Vue -->
+<script src="js/vue.min.js"></script>
+<script>
+
+var app = new Vue({
+        el: '#app',
+        data: function() {
+            return {
+                // visible: false,
+                isCollapse: false,
+                currentNav: 0,
+                activeName2: 'first',
+                pageNum: 1, 
+                currentPage: 1,
+                pageContent: '',
+                asideHeight: 300,
+                mainHeight: 300,
+                ifMenuShow: true,
+                zoomNum: '1.0',
+                textAlign: 'left',
+                zoomStyle: {},
+                pageDatas: ['<div style="position:absolute;top:0.000000px;left:0.000000px"><nobr><img height="1123.000000" width="794.000000" src ="bgimg/bg00001.jpg"/></nobr></div><p><span style="font-family:Arial;font-size:23.081280px;font-style:normal;font-weight:normal;color:#FFFFFF;"><span style="position:absolute;top:39.115643px;left:228.456116px"><nobr>Deepak Bajetha </nobr></span></span></p><p><span style="font-family:Arial;font-size:12.111959px;font-style:normal;font-weight:normal;color:#FFFFFF;"><span style="position:absolute;top:76.440590px;left:229.417831px"><nobr>Student (Computer Science and Engineering) </nobr></span></span></p><p><span style="font-family:Arial;font-size:8.912574px;font-style:normal;font-weight:normal;color:#FFFFFF;"><span style="position:absolute;top:111.170082px;left:229.341629px"><nobr>Strong in design and integration with intuitive problem-solving skills. Passionate about implementing </nobr></span><span style="position:absolute;top:125.795898px;left:229.136932px"><nobr>and launching new projects. Ability to translate business requirements into technical solutions. Looking </nobr></span><span style="position:absolute;top:140.421631px;left:229.136932px"><nobr>to start the career as an entry-level software engineer with a reputed ﬁrm driven by technology. </nobr></span></span></p><p><span style="font-family:Arial;font-size:8.912574px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:213.245773px;left:33.212666px"><nobr><a href="mailto:bajethadeepak09@gmail.com">bajethadeepak09@gmail.com </a></nobr></span></span></p><p><span style="font-family:Arial;font-size:8.912574px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:258.341797px;left:33.417393px"><nobr>7302830538 </nobr></span></span></p><p><span style="font-family:Arial;font-size:8.912574px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:303.437897px;left:33.417393px"><nobr>Haldwani, Uttarakhand, India. </nobr></span></span></p><p><span style="font-family:Arial;font-size:8.912574px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:348.534027px;left:33.212666px"><nobr><a href="https://linkedin.com/in/deepak-bajetha-376b811b2" target="_blank">linkedin.com/in/deepak- </a></nobr></span></span></p><p><span style="font-family:Arial;font-size:8.912574px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:363.159821px;left:33.212666px"><nobr><a href="https://linkedin.com/in/deepak-bajetha-376b811b2" target="_blank">bajetha-376b811b2 </a></nobr></span></span></p><p><span style="font-family:Arial;font-size:8.912574px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:408.255859px;left:33.212666px"><nobr><a href="https://github.com/DeepakBajetha" target="_blank">github.com/DeepakBajetha </a></nobr></span></span></p><p><span style="font-family:Arial;font-size:13.940180px;font-weight:bold;color:#2CBFAA;"><span style="position:absolute;top:442.872009px;left:33.536415px"><nobr>SKILLS </nobr></span></span></p><p><span style="font-family:Arial;font-size:8.912574px;font-style:normal;font-weight:normal;color:#191919;"><span style="position:absolute;top:482.603516px;left:42.558498px"><nobr>Java C C++ </nobr></span></span></p><p><span style="font-family:Arial;font-size:8.912574px;font-style:normal;font-weight:normal;color:#191919;"><span style="position:absolute;top:521.605591px;left:42.558498px"><nobr>HTML5 CSS </nobr></span></span></p><p><span style="font-family:Arial;font-size:8.912574px;font-style:normal;font-weight:normal;color:#191919;"><span style="position:absolute;top:560.607605px;left:42.558498px"><nobr>PHP JavaScript </nobr></span></span></p><p><span style="font-family:Arial;font-size:8.912574px;font-style:normal;font-weight:normal;color:#191919;"><span style="position:absolute;top:599.609619px;left:42.558498px"><nobr>Python </nobr></span></span></p><p><span style="font-family:Arial;font-size:8.912574px;font-style:normal;font-weight:normal;color:#191919;"><span style="position:absolute;top:638.611633px;left:42.558498px"><nobr>Android Development </nobr></span></span></p><p><span style="font-family:Arial;font-size:8.912574px;font-style:normal;font-weight:normal;color:#191919;"><span style="position:absolute;top:677.613708px;left:42.558498px"><nobr>IBM Cloud </nobr></span></span></p><p><span style="font-family:Arial;font-size:13.940180px;font-weight:bold;color:#2CBFAA;"><span style="position:absolute;top:747.880127px;left:33.536415px"><nobr>LANGUAGES </nobr></span></span></p><p><span style="font-family:Arial;font-size:8.912574px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:780.298706px;left:33.417393px"><nobr>English </nobr></span></span></p><p><span style="font-family:Arial;font-size:7.998464px;font-style:italic;color:#2CBFAA;"><span style="position:absolute;top:795.749695px;left:33.398346px"><nobr>Full Professional Pro ﬁciency </nobr></span></span></p><p><span style="font-family:Arial;font-size:8.912574px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:826.308899px;left:33.417393px"><nobr>Hindi </nobr></span></span></p><p><span style="font-family:Arial;font-size:7.998464px;font-style:italic;color:#2CBFAA;"><span style="position:absolute;top:841.759766px;left:33.398346px"><nobr>Full Professional Proﬁciency </nobr></span></span></p><p><span style="font-family:Arial;font-size:13.940180px;font-weight:bold;color:#2CBFAA;"><span style="position:absolute;top:896.270691px;left:33.536415px"><nobr>INTERESTS </nobr></span></span></p><p><span style="font-family:Arial;font-size:8.912574px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:937.220947px;left:43.777309px"><nobr>Learning new technology </nobr></span></span></p><p><span style="font-family:Arial;font-size:8.912574px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:973.480713px;left:43.777309px"><nobr>Basketball Gym </nobr></span></span></p><p><span style="font-family:Arial;font-size:8.912574px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:1009.740356px;left:43.777309px"><nobr>Trekking Cooking </nobr></span></span></p><p><span style="font-family:Arial;font-size:13.940180px;font-weight:bold;color:#2CBFAA;"><span style="position:absolute;top:191.187088px;left:229.460693px"><nobr>EDUCATION </nobr></span></span></p><p><span style="font-family:Arial;font-size:12.111959px;font-weight:bold;color:#2CBFAA;"><span style="position:absolute;top:222.698242px;left:229.417831px"><nobr>B.Tech. (Computer Science and Engineering) </nobr></span></span></p><p><span style="font-family:Arial;font-size:12.111959px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:240.980469px;left:229.417831px"><nobr>DIT University </nobr></span></span></p><p><span style="font-family:Arial;font-size:7.998464px;font-style:italic;color:#2CBFAA;"><span style="position:absolute;top:263.737549px;left:229.322586px"><nobr>08/2019 - Present 9.4CGPA </nobr></span></span></p><p><span style="font-family:Arial;font-size:12.111959px;font-weight:bold;color:#2CBFAA;"><span style="position:absolute;top:301.311676px;left:229.417831px"><nobr>XII (CBSE) </nobr></span></span></p><p><span style="font-family:Arial;font-size:12.111959px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:319.593903px;left:229.417831px"><nobr>Templeton Academy International, Nainital </nobr></span></span></p><p><span style="font-family:Arial;font-size:7.998464px;font-style:italic;color:#2CBFAA;"><span style="position:absolute;top:342.351074px;left:229.322586px"><nobr>93.8% </nobr></span></span></p><p><span style="font-family:Arial;font-size:12.111959px;font-weight:bold;color:#2CBFAA;"><span style="position:absolute;top:379.925201px;left:229.417831px"><nobr>X (CBSE) </nobr></span></span></p><p><span style="font-family:Arial;font-size:12.111959px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:398.207367px;left:229.417831px"><nobr>Templeton Academy International, Nainital </nobr></span></span></p><p><span style="font-family:Arial;font-size:7.998464px;font-style:italic;color:#2CBFAA;"><span style="position:absolute;top:420.964508px;left:229.322586px"><nobr>10 CGPA </nobr></span></span></p><p><span style="font-family:Arial;font-size:13.940180px;font-weight:bold;color:#2CBFAA;"><span style="position:absolute;top:480.655212px;left:229.460693px"><nobr>CERTIFICATES </nobr></span></span></p><p><span style="font-family:Arial;font-size:10.055211px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:512.270996px;left:229.370224px"><nobr>Web Development (07/2021 - 08/2021) </nobr></span></span></p><p><span style="font-family:Arial;font-size:7.998464px;font-style:italic;color:#7C7C7C;"><span style="position:absolute;top:528.524719px;left:229.322586px"><nobr>Internshala (EA5F73F1-7031-336B-196CBEC93AC1E490) </nobr></span></span></p><p><span style="font-family:Arial;font-size:13.940180px;font-weight:bold;color:#2CBFAA;"><span style="position:absolute;top:583.035583px;left:229.460693px"><nobr>PERSONAL PROJECTS </nobr></span></span></p><p><span style="font-family:Arial;font-size:10.055211px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:614.651306px;left:229.370224px"><nobr>Online Proctor (10/2021 - Present) </nobr></span></span></p><p><span style="font-family:Arial;font-size:7.998464px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:632.123901px;left:241.206024px"><nobr>Anti cheating program for Face Recognition, Motion tracking, etc during Online Exam using Python, OpenCV, </nobr></span><span style="position:absolute;top:644.007324px;left:241.020370px"><nobr>etc. </nobr></span></span></p><p><span style="font-family:Arial;font-size:10.055211px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:672.240234px;left:229.370224px"><nobr>Simple Java Web Application (10/2021 - 11/2021) </nobr></span></span></p><p><span style="font-family:Arial;font-size:7.998464px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:689.712891px;left:241.206024px"><nobr>A website using JSP, Servlet, JDBC, MySQL, Tomcat, Eclipse. </nobr></span></span></p><p><span style="font-family:Arial;font-size:10.055211px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:717.945801px;left:229.370224px"><nobr>E-Commerce Website (07/2021 - 08/2021) </nobr></span></span></p><p><span style="font-family:Arial;font-size:7.998464px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:735.418274px;left:241.206024px"><nobr>Full stack website to buy clothes, watches, etc. using PHP, SQL, HTML, CSS, Bootstrap. </nobr></span></span></p><p><span style="font-family:Arial;font-size:10.055211px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:763.651245px;left:229.370224px"><nobr>Chatbot (10/2020 - 11/2020) </nobr></span></span></p><p><span style="font-family:Arial;font-size:7.998464px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:781.123840px;left:241.206024px"><nobr>Hotel Manager chatbot using Watson Assistant(IBM). </nobr></span></span></p><p><span style="font-family:Arial;font-size:10.055211px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:809.356750px;left:229.370224px"><nobr>Toss App (2019) </nobr></span></span></p><p><span style="font-family:Arial;font-size:7.998464px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:826.829407px;left:241.206024px"><nobr>Android app to toss a coin using Android Studio. </nobr></span></span></p><p><span style="font-family:Arial;font-size:10.055211px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:855.062256px;left:229.370224px"><nobr>Employment Management System (2018) </nobr></span></span></p><p><span style="font-family:Arial;font-size:7.998464px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:872.534851px;left:241.206024px"><nobr>Using C++. </nobr></span></span></p><p><span style="font-family:Arial;font-size:13.940180px;font-weight:bold;color:#2CBFAA;"><span style="position:absolute;top:927.045776px;left:229.460693px"><nobr>ACHIEVEMENTS </nobr></span></span></p><p><span style="font-family:Arial;font-size:10.055211px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:958.661438px;left:229.370224px"><nobr>Academic Excellence Award (2020 - 2021) </nobr></span></span></p>']
+            }
+        },
+        mounted: function() {
+            this.$nextTick(function() {
+                this.pageNum = this.pageDatas.length;
+                this.pageContent = this.pageDatas[0];
+
+                this.setLeftMenuHeight();
+            })
+        },
+        watch: {
+            'currentPage': function(newVal, oldValue) {
+                // console.log('newVal ' + newVal, 'oldValue ' + oldValue);
+                if (newVal) {
+                    this.pageContent = this.pageDatas[this.currentPage - 1];
+                }
+            },
+            'zoomNum': function(newVal, oldValue) {
+                if (newVal) {
+                    this.zoomStyle = {
+                        'transform': 'scale(' + newVal + ')',
+                        '-webkit-transform': 'scale(' + newVal + ')',
+                        '-ms-transform': 'scale(' + newVal + ')',
+                        '-moz-transform': 'scale(' + newVal + ')',
+                        '-o-transform': 'scale(' + newVal + ')'
+                    }
+                }
+            }
+        },
+        methods: {
+            
+            changeCurrentPage: function(methods) {
+                switch (methods) {
+                    case 'first':
+                        this.currentPage = 1;
+                        break;
+                    case 'prev':
+                        if (this.currentPage > 1) {
+                            this.currentPage -= 1;
+                        }
+                        break;
+                    case 'next':
+                        if (this.currentPage < this.pageNum) {
+                            this.currentPage += 1;
+                        }
+                        break;
+                    case 'last':
+                        this.currentPage = this.pageNum;
+                        break;
+                }
+            },
+
+            gotoPage: function(page) {
+                console.log(page);
+                this.currentPage = page;
+            },
+            modifyZoom: function(type) {
+                switch (type) {
+                    case 'in':
+                        if (this.zoomNum < 2) {
+                            // this.zoomNum = (this.zoomNum + 0.1).toFixed(1);
+                            this.zoomNum = (parseFloat(this.zoomNum) + 0.1).toFixed(1);
+                        }
+                        break;
+                    case 'out':
+                        if (this.zoomNum > 0.5) {
+                            this.zoomNum = (parseFloat(this.zoomNum) - 0.1).toFixed(1);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                console.log(this.zoomNum);
+            },
+            setLeftMenuHeight: function() {
+                // this.asideHeight = document.body.scrollHeight - 60;
+                this.mainHeight = document.documentElement.clientHeight - 60 - 20;
+                // 60为头部导航高度， 46为menu高度， 40为上下padding
+                this.asideHeight = this.mainHeight - 20 - 46;
+            },
+            changePage: function(page) {
+                this.currentPage = page;
+                // this.pageContent = this.pageDatas[page - 1];
+            },
+            changeLeftMenu: function() {
+                this.ifMenuShow = !this.ifMenuShow;
+            }
+        }
+    });
+
+function gotoPage(page) {
+    console.log(page);
+    app.gotoPage(page);
+}
+
+</script>
+
+</html>
